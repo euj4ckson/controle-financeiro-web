@@ -48,32 +48,52 @@ export function CategoriaForm({
     <form className="panel form-panel" onSubmit={handleSubmit}>
       <div className="panel__header">
         <h2>{initialData ? 'Editar categoria' : 'Nova categoria'}</h2>
-        <p>Cadastre categorias para organizar receitas e despesas por tipo.</p>
+        <p>Crie grupos reutilizáveis para manter os lançamentos organizados no celular.</p>
       </div>
 
       {erro ? <div className="inline-error">{erro}</div> : null}
 
       <label className="field">
         <span>Nome</span>
-        <input value={nome} onChange={(event) => setNome(event.target.value)} maxLength={100} />
-      </label>
-
-      <label className="field">
-        <span>Tipo</span>
-        <select value={tipo} onChange={(event) => setTipo(event.target.value as TipoLancamento)}>
-          <option value="Receita">Receita</option>
-          <option value="Despesa">Despesa</option>
-        </select>
-      </label>
-
-      <label className="switch-field">
         <input
-          type="checkbox"
-          checked={ativo}
-          onChange={(event) => setAtivo(event.target.checked)}
+          value={nome}
+          onChange={(event) => setNome(event.target.value)}
+          maxLength={100}
+          placeholder="Ex.: Moradia, Alimentação, Freelance"
         />
-        <span>Categoria ativa</span>
       </label>
+
+      <div className="segmented-control" aria-label="Tipo da categoria">
+        <button
+          type="button"
+          className={`segmented-control__button${tipo === 'Receita' ? ' is-active' : ''}`}
+          onClick={() => setTipo('Receita')}
+        >
+          Receita
+        </button>
+        <button
+          type="button"
+          className={`segmented-control__button${tipo === 'Despesa' ? ' is-active' : ''}`}
+          onClick={() => setTipo('Despesa')}
+        >
+          Despesa
+        </button>
+      </div>
+
+      <div className="switch-card">
+        <div>
+          <strong>Categoria ativa</strong>
+          <span>Desative apenas se quiser escondê-la das novas seleções.</span>
+        </div>
+        <label className="switch-field">
+          <input
+            type="checkbox"
+            checked={ativo}
+            onChange={(event) => setAtivo(event.target.checked)}
+          />
+          <span>{ativo ? 'Ativa' : 'Inativa'}</span>
+        </label>
+      </div>
 
       <div className="form-actions">
         {onCancel ? (
@@ -81,7 +101,7 @@ export function CategoriaForm({
             Cancelar
           </button>
         ) : null}
-        <button type="submit" className="button" disabled={saving}>
+        <button type="submit" className="button button--full-mobile" disabled={saving}>
           {saving ? 'Salvando...' : submitLabel}
         </button>
       </div>

@@ -5,6 +5,7 @@ import type {
   Lancamento,
   TipoLancamento,
 } from '../types/finance'
+import { toInputDate } from '../utils/date'
 
 interface LancamentoFormProps {
   categorias: Categoria[]
@@ -12,6 +13,8 @@ interface LancamentoFormProps {
   onCancel?: () => void
   onSubmit: (payload: CriarLancamentoRequest) => Promise<void>
   submitLabel: string
+  defaultTipo?: TipoLancamento
+  defaultDate?: string
 }
 
 export function LancamentoForm({
@@ -20,11 +23,13 @@ export function LancamentoForm({
   onCancel,
   onSubmit,
   submitLabel,
+  defaultTipo = 'Receita',
+  defaultDate = toInputDate(new Date()),
 }: LancamentoFormProps) {
   const [descricao, setDescricao] = useState(initialData?.descricao ?? '')
   const [valor, setValor] = useState(initialData ? String(initialData.valor) : '')
-  const [data, setData] = useState(initialData?.data ?? '')
-  const [tipo, setTipo] = useState<TipoLancamento>(initialData?.tipo ?? 'Receita')
+  const [data, setData] = useState(initialData?.data ?? defaultDate)
+  const [tipo, setTipo] = useState<TipoLancamento>(initialData?.tipo ?? defaultTipo)
   const [categoriaId, setCategoriaId] = useState(initialData ? String(initialData.categoriaId) : '')
   const [observacao, setObservacao] = useState(initialData?.observacao ?? '')
   const [erro, setErro] = useState('')
@@ -90,7 +95,7 @@ export function LancamentoForm({
     <form className="panel form-panel" onSubmit={handleSubmit}>
       <div className="panel__header">
         <h2>{initialData ? 'Editar lançamento' : 'Novo lançamento'}</h2>
-        <p>O formulário já separa categoria e tipo para refletir as regras da API.</p>
+        <p>Preencha só o essencial para registrar a movimentação sem sair do fluxo.</p>
       </div>
 
       {erro ? <div className="inline-error">{erro}</div> : null}
@@ -101,8 +106,26 @@ export function LancamentoForm({
           value={descricao}
           onChange={(event) => setDescricao(event.target.value)}
           maxLength={150}
+          placeholder="Ex.: supermercado, salário, aluguel"
         />
       </label>
+
+      <div className="segmented-control" aria-label="Tipo do lançamento">
+        <button
+          type="button"
+          className={`segmented-control__button${tipo === 'Receita' ? ' is-active' : ''}`}
+          onClick={() => handleTipoChange('Receita')}
+        >
+          Receita
+        </button>
+        <button
+          type="button"
+          className={`segmented-control__button${tipo === 'Despesa' ? ' is-active' : ''}`}
+          onClick={() => handleTipoChange('Despesa')}
+        >
+          Despesa
+        </button>
+      </div>
 
       <div className="field-grid">
         <label className="field">
@@ -122,30 +145,17 @@ export function LancamentoForm({
         </label>
       </div>
 
-      <div className="field-grid">
-        <label className="field">
-          <span>Tipo</span>
-          <select
-            value={tipo}
-            onChange={(event) => handleTipoChange(event.target.value as TipoLancamento)}
-          >
-            <option value="Receita">Receita</option>
-            <option value="Despesa">Despesa</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span>Categoria</span>
-          <select value={categoriaId} onChange={(event) => setCategoriaId(event.target.value)}>
-            <option value="">Selecione</option>
-            {categoriasFiltradas.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <label className="field">
+        <span>Categoria</span>
+        <select value={categoriaId} onChange={(event) => setCategoriaId(event.target.value)}>
+          <option value="">Selecione</option>
+          {categoriasFiltradas.map((categoria) => (
+            <option key={categoria.id} value={categoria.id}>
+              {categoria.nome}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <label className="field">
         <span>Observação</span>
@@ -154,6 +164,7 @@ export function LancamentoForm({
           value={observacao}
           onChange={(event) => setObservacao(event.target.value)}
           maxLength={500}
+          placeholder="Opcional"
         />
       </label>
 
@@ -163,7 +174,7 @@ export function LancamentoForm({
             Cancelar
           </button>
         ) : null}
-        <button type="submit" className="button" disabled={saving}>
+        <button type="submit" className="button button--full-mobile" disabled={saving}>
           {saving ? 'Salvando...' : submitLabel}
         </button>
       </div>
